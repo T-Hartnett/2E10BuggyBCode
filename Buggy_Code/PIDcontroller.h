@@ -5,6 +5,7 @@ class PIDController {
 public:
     PIDController(double kp, double ki, double kd);
     double compute(double input, double setpoint);
+    double computeFollowPID(double inp);
     void setTunings(double kp, double ki, double kd);
     void reset();
 

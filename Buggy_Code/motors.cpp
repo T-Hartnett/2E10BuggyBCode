@@ -1,14 +1,12 @@
 #include "motors.h"
 #include "ultrasonic.h"
 #include "config.h"
+#include "wheelencoders.h"
 #include <Arduino.h>
 
 // Define IR sensor threshold
 const int THRESHOLD = 500;
-bool stopped = true;
-bool going = false;
-bool justChanged = true;
-
+bool isMoving = false; // Flag to indicate if the buggy is moving
 
 void moveForward(double speed) {
   digitalWrite(LEFT_MOTOR_FORWARD, HIGH);
@@ -31,7 +29,7 @@ void turnRight(double speed) {
   digitalWrite(LEFT_MOTOR_BACKWARD, LOW);
   digitalWrite(RIGHT_MOTOR_FORWARD, LOW);
   digitalWrite(RIGHT_MOTOR_BACKWARD, HIGH);
-  setMotorSpeed(speed, speed * 0.9);  // Reduce right motor speed
+  setMotorSpeed(speed, speed * 0.7);  // Reduce right motor speed
 }
 
 void turnLeft(double speed) {
@@ -39,7 +37,7 @@ void turnLeft(double speed) {
   digitalWrite(LEFT_MOTOR_BACKWARD, HIGH);
   digitalWrite(RIGHT_MOTOR_FORWARD, HIGH);
   digitalWrite(RIGHT_MOTOR_BACKWARD, LOW);
-  setMotorSpeed(speed * 0.9, speed);  // Reduce left motor speed
+  setMotorSpeed(speed * 0.7, speed);  // Reduce left motor speed
 }
 
 void stopMotors(){
@@ -98,18 +96,14 @@ void handleMotorLogic() {
 
     if (leftDetected && rightDetected) {
         moveForward(newSpeed);
-        justChanged = (stopped);
-        going = true;
-        stopped = false;
+        isMoving = true; 
     } else if (leftDetected) {
         turnLeft(newSpeed);
     } else if (rightDetected) {
         turnRight(newSpeed);
     } else {
         stopMotors();
-        justChanged = (going);
-        going = false;
-        stopped = true;
+        isMoving = false;
     }
 }
 
@@ -126,7 +120,7 @@ double calculateSpeed() {
         return 0;
     }
 
-    double distanceTraveled = (((revcountleft + revcountright) / 2)) * PI * 5; // cm
+    double distanceTraveled = (((rTicks + lTicks) / 2)) * PI * 5; // cm
 
     double speed = (distanceTraveled - lastDistance) / deltaTime; // cm/s
 

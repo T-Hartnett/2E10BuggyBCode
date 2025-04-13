@@ -4,23 +4,6 @@
 PIDController::PIDController(double kp, double ki, double kd)
     : kp(kp), ki(ki), kd(kd), prevError(0), integral(0), prevTime(millis()) {}
 
-/*double PIDController::compute(double input, double setpoint) {
-    unsigned long currentTime = millis();
-    double elapsedTime = (currentTime - prevTime) / 1000.0; // Convert ms to seconds
-
-    double error = setpoint - input;
-    integral += error * elapsedTime;
-    double derivative = (error - prevError) / elapsedTime;
-
-    double output = (kp * error) + (ki * integral) + (kd * derivative);
-
-    prevError = error;
-    prevTime = currentTime;
-
-    // Constrain output to motor limits (0-255)
-    output = constrain(output, 0, 255);
-    return output;
-}*/
 
 double PIDController::compute(double input, double setpoint) {
   Serial.println("Compute is called");

@@ -1,8 +1,8 @@
 #include "config.h"
-#include "motors.h"
-#include "ultrasonic.h"
-#include "wheelencoders.h"
-#include "secrets.h"
+#include "m.h"
+#include "us.h"
+#include "we.h"
+#include "s.h"
 #include <WiFiS3.h>
 
 #define PI 3.14159

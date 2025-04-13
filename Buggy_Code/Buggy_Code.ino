@@ -12,8 +12,7 @@
 
 // Define IR sensor threshold
 const int THRESHOLD = 500;
-extern bool justChanged;
-extern bool going, stopped;
+extern bool isMoving; // Flag to indicate if the buggy is moving
 
 // Define ultrasonic sensor parameters
 const unsigned long ULTRASONIC_INTERVAL = 100;  // Interval for ultrasonic readings (ms)
@@ -35,11 +34,11 @@ WiFiServer server(5200);
 void setup() {
   Serial.begin(115200);
 
-  WiFi.beginAP(ssid, pass);
+  /*WiFi.beginAP(ssid, pass);
   IPAddress ip = WiFi.localIP();
   Serial.print("IP Address: ");
   Serial.println(ip);
-  server.begin();
+  server.begin();*/
 
 
   // Initialize IR sensor pins
@@ -68,14 +67,14 @@ void setup() {
 }
 
 void loop() {
-  /*WiFiClient client = server.available();
+  WiFiClient client = server.available();
 
   //check if connected client has data to send
   if (client.connected() && client.available() >= 1) {
     String command = client.readStringUntil('\n');
     command.trim(); // Remove whitespace and newline characters
     handleCommand(command, client);
-  } */
+  } 
   
   Serial.println("Handling motor logic...");
   handleMotorLogic();
@@ -85,11 +84,6 @@ void loop() {
   float rDistance = (rTicks * wheelCircumference) / 8.0;
   float mDistance = (lDistance + rDistance) / 2.0;
  
-
- if (objectDetected) {
-    setMotorSpeed(50, 50);  // Slow down instead of stopping
-  }
-
   Serial.print("Left: ");
   Serial.print(lTicks);
   Serial.print(" Right: ");
@@ -98,10 +92,8 @@ void loop() {
   Serial.print("Left Motor: "); Serial.print(analogRead(LEFT_MOTOR_SPEED));
   Serial.print(" Right Motor: "); Serial.println(analogRead(RIGHT_MOTOR_SPEED));
 
-  Serial.print("Going: ");
-  Serial.print(going);
-  Serial.print(" Stopped: ");
-  Serial.println(stopped);
+  Serial.print("Moving: ");
+  Serial.println(isMoving);
 
 }
 
@@ -126,34 +118,12 @@ void handleUltrasonicSensor() {
     }
 }
 
-/*void handleUltrasonicSensor() {
-    unsigned long currentTime = millis();
-
-    if (currentTime - lastUltrasonicTime >= ULTRASONIC_INTERVAL) {
-        lastUltrasonicTime = currentTime;
-        ultrasonic.trigger();
-        unsigned long distance = ultrasonic.getDistance();
-
-        if (distance > 0 && distance <= STOP_DISTANCE) {
-            objectDetected = true;
-
-            // Compute new speed based on distance from object
-            double newSpeed = followPID.compute(distance, 15); // Target is 15cm
-
-            setMotorSpeed(newSpeed, newSpeed);
-        } else {
-            objectDetected = false;
-        }
-    }
-}*/
-
 
 // function to take a string sent from processing and make the buggy react
 void handleCommand(String command, WiFiClient client) {
 
   if (command.equals("START")) {
-    going = true;
-    stopped = false;
+    isMoving = true;
     moveForward(150);  // Start moving
   }
 
@@ -161,26 +131,24 @@ void handleCommand(String command, WiFiClient client) {
    
   
   else if (command.equals("STOP")) {
-    going = false;
-    stopped = true;
+    isMoving = false;
     stopMotors();
     server.print("DISTANCE TRAVELLED,");
     server.println(mDistance);
-    total_Distance = 0;
+    //mDistance = 0;
     while(true){
       String command2;
       if (client.connected() && client.available()) {
         command2 = client.readStringUntil('\n');
       }
       if (command2.equals("START")){
-        going = true;
-        stopped = false;
+        isMoving = true;
         break;
       }
     }
     //Serial.println("Buggy stopping...");
   }
-  else if (command.equals("SPEED1")){
+  /*else if (command.equals("SPEED1")){
     
   }
   else if (command.equals("SPEED2")){
@@ -190,6 +158,6 @@ void handleCommand(String command, WiFiClient client) {
     going = true;
     stopped = false;
     moveForward(150);  // Start moving
-  }
+  }*/
 
 }
